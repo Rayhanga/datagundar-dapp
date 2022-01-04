@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import {user} from "$lib/initGun";
+  import { user } from "$lib/initGun";
 
   let newUser = {
     username: "",
@@ -51,19 +51,34 @@
           <label for="username" class="label">
             <span class="label-text">Username</span>
           </label>
-          <input type="text" placeholder="username" class="input" bind:value={newUser.username}/>
+          <input
+            type="text"
+            placeholder="username"
+            class="input"
+            bind:value={newUser.username}
+          />
         </div>
         <div class="form-control">
           <label for="password" class="label">
             <span class="label-text">Password</span>
           </label>
-          <input type="password" placeholder="******" class="input" bind:value={newUser.password} />
+          <input
+            type="password"
+            placeholder="******"
+            class="input"
+            bind:value={newUser.password}
+          />
         </div>
         <div class="form-control">
           <label for="confirmPassword" class="label">
             <span class="label-text">Confirm Password</span>
           </label>
-          <input type="password" placeholder="******" class="input" bind:value={newUser.confirmPassword} />
+          <input
+            type="password"
+            placeholder="******"
+            class="input"
+            bind:value={newUser.confirmPassword}
+          />
         </div>
         <button type="submit" class="btn btn-primary w-full">Register</button>
       </form>

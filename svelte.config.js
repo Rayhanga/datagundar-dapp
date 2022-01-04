@@ -16,17 +16,18 @@ const config = {
   kit: {
     target: "#svelte",
     adapter: adapter({
-      // default options are shown
-      pages: "build",
-      assets: "build",
-      fallback: "200.html",
-      paths: {
-        base: dev ? "" : "/datagundar-dapp",
-      },
-      // If you are not using a .nojekyll file, change your appDir to something not starting with an underscore.
-      // For example, instead of '_app', use 'app_', 'internal', etc.
-      appDir: "internal",
+      pages: 'build',
+      assets: 'build',
+      fallback: null
     }),
+    prerender: {
+      crawl: true,
+      enabled: true,
+      entries: [
+        '/',
+        '/dapp',
+      ],
+    }
   },
 };
 

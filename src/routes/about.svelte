@@ -1,5 +1,5 @@
 <svelte:head>
-  <title>DataGundar</title>
+  <title>DataGundar | About</title>
 </svelte:head>
 
 <div
@@ -11,10 +11,6 @@
   <div class="flex-1 px-2 mx-2">
     <div class="items-stretch hidden lg:flex">
       <a href="/" class="btn btn-ghost btn-sm rounded-btn"> Home </a>
-      <!-- <a href="/404"/> -->
-      <a href="/login"/>
-      <a href="/register"/>
-      <a href="/404"></a>
       <a href="/about" class="btn btn-ghost btn-sm rounded-btn">
         About Data Gundar
       </a>
@@ -49,7 +45,7 @@
 <div class="hero min-h-screen bg-base-200">
   <div class="text-center hero-content">
     <div class="max-w-md">
-      <h1 class="mb-5 text-5xl font-bold">Hello there</h1>
+      <h1 class="mb-5 text-5xl font-bold">About Data Gundar</h1>
       <p class="mb-5">
         Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
         excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a
