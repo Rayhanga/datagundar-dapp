@@ -9,6 +9,7 @@
    *
    * */
 
+  // TODO: Make a function for this
   corsProxy.subscribe((value) => {
     if (value) {
       getJadwalKuliah("4IA88", value);
