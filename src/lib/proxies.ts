@@ -6,17 +6,17 @@ export enum InstanceType {
   STAFFSITE = 2
 }
 
-export const instanceFactory = (instanceType: InstanceType, corsProxy: string): AxiosInstance => {
+export const instanceFactory = (instanceType: InstanceType, corsProxy: URL | string): AxiosInstance => {
   switch (instanceType) {
-    case 0:
+    case InstanceType.BAAK:
       return axios.create({
         baseURL: `${corsProxy}/baak`,
       })
-    case 1:
+    case InstanceType.SAP:
       return axios.create({
         baseURL: `${corsProxy}/sap`,
       })
-    case 2:
+    case InstanceType.STAFFSITE:
       return axios.create({
         baseURL: `${corsProxy}/staffsite`,
       })

@@ -1,121 +1,162 @@
 import cheerio from "cheerio";
+import type { AxiosInstance } from "axios";
+import { get } from "svelte/store";
+
 import type { Jadwal } from "$lib/genericTypes";
 import { instanceFactory, InstanceType } from "$lib/proxies";
+import { user } from "$lib/initGun";
+import { corsProxy, jadwalPerkuliahan } from "$lib/stores";
 
-// TODO: Refactor this
-const sortJadwal = (jadwalData: Jadwal[]) => {
-  const hari = ["Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu", "Minggu"]
-  const sortWaktu = jadwalData.sort((a, b) => parseInt(a.waktu.replace(":", "")) > parseInt(b.waktu.replace(":", "")) ? 1 : 0)
-  const sortHari = sortWaktu.sort((a, b)=> hari.indexOf(a.hari) > hari.indexOf(b.hari) ? 1 : 0)
-
-  return sortHari
-}
-const sortJadwalByToday = (jadwalData: Jadwal[]) => {
-  const now = new Date()
-  const nowDay = now.getDay()
-  const nowTime = parseInt(`${now.getHours()}${now.getMinutes()}`)
-  const hari = ["Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu", "Minggu"]
-  const sortedHari = hari.slice(nowDay).concat(hari.slice(0,nowDay));
-  // const sortWaktu = jadwalData.sort((a, b) => parseInt(a.waktu.replace(":", "")) > parseInt(b.waktu.replace(":", "")) ? 1 : 0)
-  const sortHari = jadwalData.sort((a, b)=> sortedHari.indexOf(a.hari) > sortedHari.indexOf(b.hari) ? 1 : 0)
-
-  return sortHari
+enum DataType {
+  WAKTU_PERKULIAHAN = 0,
+  JADWAL_PERKULIAHAN = 1
 }
 
-export const getJadwalKuliah = async (teks: string, corsProxy) => {
-  const baakInstance = instanceFactory(InstanceType.BAAK, corsProxy)
-  console.log(baakInstance)
-  const waktuPerkuliahan = await baakInstance
-    .get("/kuliahUjian/6#")
-    .then((res) => {
-      const html = res.data;
-      const $ = cheerio.load(html);
-      const rows = $("table.cell-xs-6").first().find("tr");
-      let waktuPerkuliahanData: any[] = [];
-      rows.each((i: number, row: any) => {
-        let waktuPerkuliahanDatum: any[] = [];
-        $(row)
-          .find("td,th")
-          .each((j: number, datum: any) => {
+class JadwalScraper {
+  hariList: string[]
+  waktuPerkulihanData: any[]
+  jadwalData: Jadwal[]
+  corsProxyInstance: AxiosInstance
+
+  constructor(public corsProxyURL: URL | string) {
+    this.corsProxyInstance = instanceFactory(InstanceType.BAAK, corsProxyURL)
+    this.hariList = ["Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu", "Minggu"]
+  }
+
+  public setCorsProxyURL(newCorsProxyURL: URL | string) {
+    this.corsProxyURL = newCorsProxyURL
+    this.corsProxyInstance = instanceFactory(InstanceType.BAAK, newCorsProxyURL)
+  }
+
+  public async getJadwalData(teks: string){
+    const jadwalDataRaw = await this._getRawData("/jadwal/cariJadKul", {
+      params: {
+        teks
+      }
+    })
+    const waktuPerkuliahanDataRaw = await this._getRawData("/kuliahUjian/6#")
+
+    this.waktuPerkulihanData = await this._parseRawData(waktuPerkuliahanDataRaw, DataType.WAKTU_PERKULIAHAN)
+    this.jadwalData = await this._parseRawData(jadwalDataRaw, DataType.JADWAL_PERKULIAHAN)
+    
+    return this.jadwalData
+  }
+
+
+  private async _getRawData(path: string, config = {}) {
+    return await this.corsProxyInstance.get(path, config)
+    // TODO: Add error notification here
+    .catch()
+  }
+
+  private _parseRawData(response, rawDataType: DataType) {
+    const html = response.data
+    const $ = cheerio.load(html)
+
+    switch (rawDataType) {
+      case DataType.WAKTU_PERKULIAHAN:
+        var rows = $("table.cell-xs-6").first().find("tr");
+        let waktuPerkuliahanData: any[] = [];
+        rows.each((i: number, row: any) => {
+          let waktuPerkuliahanDatum: any[] = [];
+          $(row).find("td,th").each((j: number, datum: any) => {
             waktuPerkuliahanDatum[j] = $(datum).text();
           });
-        waktuPerkuliahanData = [...waktuPerkuliahanData, waktuPerkuliahanDatum];
-      });
-      waktuPerkuliahanData.shift();
-      waktuPerkuliahanData = waktuPerkuliahanData.filter(
-        (datum) => datum.length > 0
-      );
+          waktuPerkuliahanData = [...waktuPerkuliahanData, waktuPerkuliahanDatum];
+        });
+        waktuPerkuliahanData.shift();
+        waktuPerkuliahanData = waktuPerkuliahanData.filter(
+          (datum) => datum.length > 0
+        );
 
-      // Clean the data
-      waktuPerkuliahanData.map((datum) => {
-        const [start, end] = datum[1]
-          .split(" - ")
-          .map((time) => time.replace(".", ":"));
-        datum[0] = start;
-        datum[1] = end;
-      });
-      waktuPerkuliahanData.unshift(["Start", "End"]);
+        this._cleanParsedData(waktuPerkuliahanData, rawDataType)
 
-      return waktuPerkuliahanData;
-    });
+        return waktuPerkuliahanData
+      case DataType.JADWAL_PERKULIAHAN:
+        var rows = $("tbody").first().find("tr");
+        let jadwalData: any[] = [];
 
-  return await baakInstance
-    .get("/jadwal/cariJadKul", {
-      params: {
-        teks,
-      },
-    })
-    .then((res) => {
-      const html = res.data;
-      const $ = cheerio.load(html);
-      const rows = $("tbody").first().find("tr");
-      let jadwalData: any[] = [];
-      rows.each((i: number, row: any) => {
-        let jadwalDatum: any[] = [];
-        $(row)
-          .find("td,th")
-          .each((j: number, datum: any) => {
+        rows.each((i: number, row: any) => {
+          let jadwalDatum: any[] = [];
+          $(row).find("td,th").each((j: number, datum: any) => {
             jadwalDatum[j] = $(datum).text();
           });
 
-        let waktu = jadwalDatum[3];
-
-        if (i > 0) {
-          const waktuParse = jadwalDatum[3].split("/").filter(item => item !== "");
-          if (waktuParse.length > 0) {
-            const waktuStart = waktuPerkuliahan[waktuParse[0]][0];
-            const waktuEnd =
-              waktuPerkuliahan[waktuParse[waktuParse.length - 1]][1];
-            waktu = `${waktuStart} - ${waktuEnd}`;
+          let [kelas, hari, matkul, waktu, ruang, dosen] = jadwalDatum
+          if (i > 0){
+            waktu = this._parseJadwalWaktu(waktu)
           }
-        }
 
-        const kelas = jadwalDatum[0];
-        const hari = jadwalDatum[1];
-        const matkul = jadwalDatum[2];
-        const ruang = jadwalDatum[4];
-        const dosen = jadwalDatum[5];
+          jadwalData = [...jadwalData, {
+            kelas, hari, matkul, waktu, ruang, dosen
+          }]
 
-        // console.log(jadwalDatum)
+        })
 
-        jadwalData = [
-          ...jadwalData,
-          {
-            kelas,
-            hari,
-            matkul,
-            waktu,
-            ruang,
-            dosen,
-          },
-        ];
-      });
+        return jadwalData
+      default:
+        throw "Error DataType"
+    }
+  }
 
+  private _cleanParsedData(parsedData: any[], parsedDataType: DataType) {
+    switch (parsedDataType) {
+      case DataType.JADWAL_PERKULIAHAN:
+        parsedData.map(datum => {
+          const [start, end] = datum[1].split(" - ").map(time => time.replace(".", ":"));
+          datum[0] = start;
+          datum[1] = end;
+        });
+        parsedData.unshift(["Start", "End"]);
+        break
+      case DataType.WAKTU_PERKULIAHAN:
 
-      jadwalData.shift()
-      console.log(jadwalData)
-      sortJadwalByToday(jadwalData)
+        break
+      default:
+        throw "Error DataType"
+    }
+  }
 
-      return jadwalData;
-    });
-};
+  private _parseJadwalWaktu(waktu: string){
+    const waktuParse = waktu.split("/").filter(item => item !== "");
+    if (waktuParse.length > 0) {
+      const waktuStart = this.waktuPerkulihanData[waktuParse[0]][0];
+      const waktuEnd =
+        this.waktuPerkulihanData[waktuParse[waktuParse.length - 1]][1];
+      return `${waktuStart} - ${waktuEnd}`;
+    } else {
+      return ""
+    }
+  }
+
+  private _sortJadwalByWaktu(a: Jadwal, b: Jadwal) {
+    const waktu_a = a.waktu.replace(":", "")
+    const waktu_b = b.waktu.replace(":", "")
+    return waktu_a > waktu_b ? 1 : 0
+  }
+
+  private _sortJadwalByHari(a: Jadwal, b: Jadwal) {
+    const hari_a = this.hariList.indexOf(a.hari)
+    const hari_b = this.hariList.indexOf(b.hari)
+    return hari_a > hari_b ? 1 : 0
+  }
+
+  private _sortJadwalByToday(today) {
+
+  }
+
+  private _sortHariListByToday(today) {
+    return this.hariList.slice(today).concat(this.hariList.slice(0, today))
+  }
+
+  private _sortJadwal(byToday = false) {
+    if (byToday) {
+      const now = new Date()
+      const today = now.getDay()
+      // const nowTime = parseInt(`${now.getHours()}${now.getMinutes()}`)
+    }
+  }
+}
+
+const jadwalScraper = new JadwalScraper(get(corsProxy))
+export default jadwalScraper
