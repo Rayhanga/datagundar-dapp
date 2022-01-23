@@ -1,6 +1,19 @@
 <script lang="ts">
   import { getJadwalKuliah } from "$lib/scraper/jadwal";
-  const jadwalKuliah = getJadwalKuliah("4IA88");
+  import { corsProxy } from "$lib/stores";
+
+  /** Jadwal update flow:
+   *  1.    Empty?
+   *  1.1.  If Yes, then
+   *
+   *
+   * */
+
+  corsProxy.subscribe((value) => {
+    if (value) {
+      getJadwalKuliah("4IA88", value);
+    }
+  });
 </script>
 
 <svelte:head>
@@ -12,7 +25,7 @@
 
 <h1>Jadwal Perkuliahan</h1>
 <div class="flex flex-col items-center justify-center h-full w-full">
-  {#await jadwalKuliah}
+  <!-- {#await jadwalKuliah}
     <button class="btn btn-lg btn-ghost loading">Loading...</button>
   {:then jadwalData}
     <div class="overflow-x-auto w-full">
@@ -43,5 +56,5 @@
     </div>
   {:catch error}
     <p class="text-red-600">{error.message}</p>
-  {/await}
+  {/await} -->
 </div>

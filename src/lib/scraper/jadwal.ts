@@ -1,8 +1,30 @@
-import { baakInstance } from "$lib/proxies";
-import { sortJadwal, sortJadwalByToday } from "$lib/utils";
 import cheerio from "cheerio";
+import type { Jadwal } from "$lib/genericTypes";
+import { instanceFactory, InstanceType } from "$lib/proxies";
 
-export const getJadwalKuliah = async (teks: string) => {
+// TODO: Refactor this
+const sortJadwal = (jadwalData: Jadwal[]) => {
+  const hari = ["Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu", "Minggu"]
+  const sortWaktu = jadwalData.sort((a, b) => parseInt(a.waktu.replace(":", "")) > parseInt(b.waktu.replace(":", "")) ? 1 : 0)
+  const sortHari = sortWaktu.sort((a, b)=> hari.indexOf(a.hari) > hari.indexOf(b.hari) ? 1 : 0)
+
+  return sortHari
+}
+const sortJadwalByToday = (jadwalData: Jadwal[]) => {
+  const now = new Date()
+  const nowDay = now.getDay()
+  const nowTime = parseInt(`${now.getHours()}${now.getMinutes()}`)
+  const hari = ["Senin", "Selasa", "Rabu", "Kamis", "Jum'at", "Sabtu", "Minggu"]
+  const sortedHari = hari.slice(nowDay).concat(hari.slice(0,nowDay));
+  // const sortWaktu = jadwalData.sort((a, b) => parseInt(a.waktu.replace(":", "")) > parseInt(b.waktu.replace(":", "")) ? 1 : 0)
+  const sortHari = jadwalData.sort((a, b)=> sortedHari.indexOf(a.hari) > sortedHari.indexOf(b.hari) ? 1 : 0)
+
+  return sortHari
+}
+
+export const getJadwalKuliah = async (teks: string, corsProxy) => {
+  const baakInstance = instanceFactory(InstanceType.BAAK, corsProxy)
+  console.log(baakInstance)
   const waktuPerkuliahan = await baakInstance
     .get("/kuliahUjian/6#")
     .then((res) => {
@@ -91,6 +113,7 @@ export const getJadwalKuliah = async (teks: string) => {
 
 
       jadwalData.shift()
+      console.log(jadwalData)
       sortJadwalByToday(jadwalData)
 
       return jadwalData;

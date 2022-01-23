@@ -1,12 +1,24 @@
-import axios from "axios";
+import axios, { AxiosInstance } from "axios";
 
-const dev = process.env.NODE_ENV === "development";
+export enum InstanceType {
+  BAAK = 0,
+  SAP = 1,
+  STAFFSITE = 2
+}
 
-
-export const baakInstance = axios.create({
-  baseURL: dev ? "http://localhost:3003/baak" : "https://baak.gunadarma.ac.id",
-});
-
-export const sapInstance = axios.create({
-  baseURL: "https://sap.gunadarma.ac.id",
-});
+export const instanceFactory = (instanceType: InstanceType, corsProxy: string): AxiosInstance => {
+  switch (instanceType) {
+    case 0:
+      return axios.create({
+        baseURL: `${corsProxy}/baak`,
+      })
+    case 1:
+      return axios.create({
+        baseURL: `${corsProxy}/sap`,
+      })
+    case 2:
+      return axios.create({
+        baseURL: `${corsProxy}/staffsite`,
+      })
+  }
+}
