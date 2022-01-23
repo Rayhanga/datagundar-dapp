@@ -1,8 +1,10 @@
 <script lang="ts">
   import "../app.css";
   import { goto } from "$app/navigation";
-  import { username } from "$lib/stores";
+  import mainStore from "$lib/stores";
   import { onMount } from "svelte";
+
+  const { username } = mainStore
 
   onMount(() => {
     if ($username) {

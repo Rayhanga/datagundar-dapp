@@ -1,19 +1,15 @@
 <script lang="ts">
-  import { getJadwalKuliah } from "$lib/scraper/jadwal";
-  import { corsProxy } from "$lib/stores";
+  import { onMount } from "svelte";
 
-  /** Jadwal update flow:
-   *  1.    Empty?
-   *  1.1.  If Yes, then
-   *
-   *
-   * */
+  import mainStore from "$lib/stores";
+  import jadwalScraper from "$lib/scraper/jadwal";
 
-  // TODO: Make a function for this
-  corsProxy.subscribe((value) => {
-    if (value) {
-      getJadwalKuliah("4IA88", value);
-    }
+  // const { jadwalPerkuliahan } = mainStore;
+
+  onMount(async () => {
+    console.log(jadwalScraper.corsProxyURL);
+    console.log(await jadwalScraper.getJadwalData("4IA88"));
+    // console.log($jadwalPerkuliahan);
   });
 </script>
 
@@ -26,10 +22,9 @@
 
 <h1>Jadwal Perkuliahan</h1>
 <div class="flex flex-col items-center justify-center h-full w-full">
-  <!-- {#await jadwalKuliah}
-    <button class="btn btn-lg btn-ghost loading">Loading...</button>
-  {:then jadwalData}
-    <div class="overflow-x-auto w-full">
+  <!-- <button class="btn btn-lg btn-ghost loading">Loading...</button> -->
+  <div class="overflow-x-auto w-full">
+    <!-- {#if $jadwalPerkuliahan.length > 0}
       <table class="table w-full table">
         <thead class="text-center">
           <tr>
@@ -41,7 +36,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each jadwalData as jadwal}
+          {#each $jadwalPerkuliahan as jadwal}
             <tr>
               <th>{jadwal.hari}</th>
               <td>{jadwal.waktu}</td>
@@ -49,13 +44,11 @@
               <td>{jadwal.matkul}</td>
               <td>{jadwal.dosen}</td>
             </tr>
-          {:else}
-            <p>Jadwal Kosong...</p>
           {/each}
         </tbody>
       </table>
-    </div>
-  {:catch error}
-    <p class="text-red-600">{error.message}</p>
-  {/await} -->
+    {:else}
+      <p>Jadwal is Empty</p>
+    {/if} -->
+  </div>
 </div>

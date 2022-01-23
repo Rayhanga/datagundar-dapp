@@ -1,8 +1,10 @@
 <script lang="ts">
+  import mainStore from "$lib/stores";
   import { goto } from "$app/navigation";
-  import { username } from "$lib/stores";
   import { user } from "$lib/initGun";
   import { onMount } from "svelte";
+
+  const { username } = mainStore;
 
   let userCredential = {
     username: "",

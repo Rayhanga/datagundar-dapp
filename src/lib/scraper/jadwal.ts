@@ -5,7 +5,7 @@ import { get } from "svelte/store";
 import type { Jadwal } from "$lib/genericTypes";
 import { instanceFactory, InstanceType } from "$lib/proxies";
 import { user } from "$lib/initGun";
-import { corsProxy, jadwalPerkuliahan } from "$lib/stores";
+import mainStore from "$lib/stores";
 
 enum DataType {
   WAKTU_PERKULIAHAN = 0,
@@ -158,5 +158,7 @@ class JadwalScraper {
   }
 }
 
-const jadwalScraper = new JadwalScraper(get(corsProxy))
+const {selectedCorsProxy} = mainStore
+
+const jadwalScraper = new JadwalScraper(get(selectedCorsProxy))
 export default jadwalScraper

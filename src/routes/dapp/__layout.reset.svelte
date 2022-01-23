@@ -1,10 +1,12 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
-  import { username } from "$lib/stores";
+  import mainStore from "$lib/stores";
   import { onMount } from "svelte";
   import { user } from "$lib/initGun";
 
   import "../../app.css";
+
+  const { username } = mainStore
 
   onMount(() => {
     if (!$username) {
