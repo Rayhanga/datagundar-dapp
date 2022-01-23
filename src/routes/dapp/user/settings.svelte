@@ -20,6 +20,8 @@
 {:else}
   <p>Cors Proxy: Undefined</p>
 {/if}
+
+<!-- TODO: Add validation -->
 <form on:submit|preventDefault={handleChangeCorsProxy}>
   <div class="form-control">
     <input
