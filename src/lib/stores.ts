@@ -28,7 +28,32 @@ const createUsername = (ref: IGunChainReference) => {
 const createJadwalUser = (ref: IGunChainReference) => {
   const { subscribe, set, update } = writable([]);
 
-  ref.get("jadwal").once(value => {
+  ref.get("jadwal").once((value: Jadwal[]) => {
+    set(value)
+  })
+
+  ref.get("jadwal").on((value: Jadwal[]) => {
+    set(value)
+  })
+  
+  return {
+    subscribe,
+    set,
+    update
+  }
+}
+
+const createCorsProxy = (ref: IGunChainReference) => {
+  const { subscribe, set, update } = writable("");
+
+  // @ts-ignore
+  ref.get("corsProxy").once((value: string) => {
+    if (value){
+      set(value)
+    }
+  })
+
+  ref.get("corsProxy").on((value: string) => {
     set(value)
   })
   
@@ -41,3 +66,4 @@ const createJadwalUser = (ref: IGunChainReference) => {
 
 export const username: Writable<string> = createUsername(user);
 export const dataJadwal: Writable<Jadwal[]> = createJadwalUser(user)
+export const corsProxy: Writable<string> = createCorsProxy(user)
