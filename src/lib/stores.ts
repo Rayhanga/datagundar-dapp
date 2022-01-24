@@ -5,8 +5,10 @@ import type { Jadwal } from "./genericTypes";
 import { gun, user } from "./initGun";
 
 interface WritableCollection extends Writable<object> {
-  findItem(targetValue: any): string | null
+  getItemKey(targetValue: any): string | null
+  getItemByKey(key: string): any
   addItem(value: any, key?: string): void
+  updateItem(key: string, value: any): void
   removeItem(key: string): void
   clearCollection(): void
   setCollection(newCollection: any[]): void
@@ -19,6 +21,7 @@ interface WritableItem<T> extends Writable<T> {
 
 class MainStore {
   username: WritableItem<string>
+  userkelas: WritableItem<string>
   jadwalPerkuliahan: WritableCollection
   registeredCorsProxies: WritableCollection
   selectedCorsProxy: WritableItem<string>
@@ -27,6 +30,7 @@ class MainStore {
     public user: IGunChainReference
   ) {
     this.username = this._createUsernameStore(this.user)
+    this.userkelas = this._createCustomStore(this.user.get("kelas"))
     this.selectedCorsProxy = this._createCustomStore(this.user.get("selectedCorsProxy"))
     this.jadwalPerkuliahan = this._createCustomCollectionStore(this.user.get("jadwalPerkuliahan"))
     this.registeredCorsProxies = this._createCustomCollectionStore(this.user.get("registeredCorsProxies"))
@@ -75,22 +79,21 @@ class MainStore {
     })
 
     // @ts-ignore
-    gun.on("auth", async (ack) => {
-      ref.map().on((value, key) => {
-        update(oldValue => {
-          return {
-            ...oldValue,
-            [key]: value
-          }
-        });
-      })
-    });
+    // gun.on("auth", async (ack) => {
+    //   ref.map().on((value, key) => {
+    //     update(oldValue => {
+    //       return {
+    //         ...oldValue,
+    //         [key]: value
+    //       }
+    //     });
+    //   })
+    // });
 
-    const findItem = (targetValue) => {
+    const getItemKey = (targetValue) => {
       let itemKey = null
       subscribe(value => {
         for (const [key, val] of Object.entries(value)) {
-          console.log(key, val)
           if (targetValue === val) {
             itemKey = key
             break
@@ -100,17 +103,35 @@ class MainStore {
       return itemKey
     }
 
+    const getItemByKey = (targetKey: string) => {
+      subscribe(value => {
+        for (const [key, val] of Object.entries(value)) {
+          // console.log(key, val)
+          if (targetKey === key) {
+            console.log(key, val)
+            return [key, val]
+            break
+          }
+        }
+      })
+      return null
+    }
+
     const addItem = (value, key = undefined) => {
       if (key) {
-        ref.get(key).put(value)
+        updateItem(key, value)
       } else {
-        if (findItem(value)) {
+        if (getItemKey(value)) {
           // TODO: Create better error handler
           throw new Error("Duplicate value")
         } else {
           ref.set(value)
         }
       }
+    }
+
+    const updateItem = (key, value) => {
+      ref.get(key).put(value)
     }
 
     const removeItem = (key) => {
@@ -131,11 +152,13 @@ class MainStore {
       subscribe,
       set,
       update,
-      findItem,
+      getItemKey,
       addItem,
+      updateItem,
       removeItem,
       clearCollection,
-      setCollection
+      setCollection,
+      getItemByKey
     }
   }
 
@@ -145,13 +168,13 @@ class MainStore {
     ref.on(value => {
       set(value)
     })
-    
+
     // @ts-ignore
-    gun.on("auth", async (ack) => {
-      ref.on(value => {
-        set(value)
-      })
-    });
+    // gun.on("auth", async (ack) => {
+    //   ref.on(value => {
+    //     set(value)
+    //   })
+    // });
 
     const setValue = (newValue) => {
       ref.put(newValue)
@@ -171,5 +194,5 @@ class MainStore {
   }
 }
 
-let mainStore = new MainStore(user)
+const mainStore = new MainStore(user)
 export default mainStore
