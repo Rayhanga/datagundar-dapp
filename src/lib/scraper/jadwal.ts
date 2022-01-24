@@ -93,6 +93,8 @@ class JadwalScraper {
 
         })
 
+        jadwalData.shift()
+
         return jadwalData
       default:
         throw "Error DataType"
@@ -161,4 +163,7 @@ class JadwalScraper {
 const {selectedCorsProxy} = mainStore
 
 const jadwalScraper = new JadwalScraper(get(selectedCorsProxy))
+selectedCorsProxy.subscribe(newCorsProxyURL => {
+  jadwalScraper.setCorsProxyURL(newCorsProxyURL)
+})
 export default jadwalScraper
