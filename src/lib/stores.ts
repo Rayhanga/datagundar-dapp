@@ -8,7 +8,7 @@ import { gun, user } from "./initGun";
 class MainStore {
   username: Writable<string>
   jadwalPerkuliahan: Writable<Jadwal[]>
-  registeredCorsProxy: Writable<string[]>
+  registeredCorsProxies: Writable<string[]>
   selectedCorsProxy: Writable<string>
 
   constructor(
@@ -16,7 +16,7 @@ class MainStore {
   ){
     this.username = this._createUsernameStore(this.user)
     this.jadwalPerkuliahan = this._createCustomStore(this.user.get("jadwalPerkuliahan")) as Writable<Jadwal[]>
-    this.registeredCorsProxy = this._createCustomStore(this.user.get("registeredCorsProxy")) as Writable<string[]>
+    this.registeredCorsProxies = this._createCustomStore(this.user.get("registeredCorsProxies")) as Writable<string[]>
     this.selectedCorsProxy = this._createCustomStore(this.user.get("selectedCorsProxy")) as Writable<string>
   }
 
