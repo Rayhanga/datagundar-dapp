@@ -4,7 +4,6 @@ import { get } from "svelte/store";
 
 import type { Jadwal } from "$lib/genericTypes";
 import { instanceFactory, InstanceType } from "$lib/proxies";
-import { user } from "$lib/initGun";
 import mainStore from "$lib/stores";
 
 enum DataType {
@@ -15,7 +14,7 @@ enum DataType {
 class JadwalScraper {
   hariList: string[]
   waktuPerkulihanData: any[]
-  jadwalData: Jadwal[]
+  jadwalData: [string, Jadwal][]
   corsProxyInstance: AxiosInstance
 
   constructor(public corsProxyURL: URL | string) {
@@ -86,10 +85,11 @@ class JadwalScraper {
           if (i > 0){
             waktu = this._parseJadwalWaktu(waktu)
           }
+          matkul = matkul.replace(/\s*$/g, "")
 
-          jadwalData = [...jadwalData, {
+          jadwalData = [...jadwalData, [`${hari}_${matkul.replace(/\s/g, "-")}_${dosen.replace(/\s/g, "-")}`, {
             kelas, hari, matkul, waktu, ruang, dosen
-          }]
+          }]]
 
         })
 
@@ -111,9 +111,9 @@ class JadwalScraper {
         });
         parsedData.unshift(["Start", "End"]);
         break
-      case DataType.JADWAL_PERKULIAHAN:
-
-        break
+      // case DataType.JADWAL_PERKULIAHAN:
+        
+      //   break
       default:
         throw "Error DataType"
     }
