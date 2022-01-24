@@ -5,13 +5,15 @@ import type { Jadwal } from "./genericTypes";
 import { gun, user } from "./initGun";
 
 interface WritableCollection extends Writable<object> {
-  findItem(targetValue: any): string | null 
-  addItem(value: any, key?: string): void,
+  findItem(targetValue: any): string | null
+  addItem(value: any, key?: string): void
   removeItem(key: string): void
+  clearCollection(): void
+  setCollection(newCollection: any[]): void
 }
 
 interface WritableItem<T> extends Writable<T> {
-  setValue(newValue: T): void,
+  setValue(newValue: T): void
   deleteValue(): void
 }
 
@@ -72,12 +74,24 @@ class MainStore {
       })
     })
 
+    // @ts-ignore
+    gun.on("auth", async (ack) => {
+      ref.map().on((value, key) => {
+        update(oldValue => {
+          return {
+            ...oldValue,
+            [key]: value
+          }
+        });
+      })
+    });
+
     const findItem = (targetValue) => {
       let itemKey = null
       subscribe(value => {
         for (const [key, val] of Object.entries(value)) {
           console.log(key, val)
-          if (targetValue  === val) {
+          if (targetValue === val) {
             itemKey = key
             break
           }
@@ -86,7 +100,7 @@ class MainStore {
       return itemKey
     }
 
-    const addItem = (value, key=undefined) => {
+    const addItem = (value, key = undefined) => {
       if (key) {
         ref.get(key).put(value)
       } else {
@@ -103,13 +117,25 @@ class MainStore {
       ref.get(key).put(null)
     }
 
+    const clearCollection = () => {
+      ref.put(null)
+    }
+
+    const setCollection = (newCollection: any[]) => {
+      for (const item of newCollection) {
+        ref.set(item)
+      }
+    }
+
     return {
       subscribe,
       set,
       update,
       findItem,
       addItem,
-      removeItem
+      removeItem,
+      clearCollection,
+      setCollection
     }
   }
 
@@ -119,6 +145,13 @@ class MainStore {
     ref.on(value => {
       set(value)
     })
+    
+    // @ts-ignore
+    gun.on("auth", async (ack) => {
+      ref.on(value => {
+        set(value)
+      })
+    });
 
     const setValue = (newValue) => {
       ref.put(newValue)
@@ -138,5 +171,5 @@ class MainStore {
   }
 }
 
-const mainStore = new MainStore(user)
+let mainStore = new MainStore(user)
 export default mainStore
