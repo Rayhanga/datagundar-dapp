@@ -103,7 +103,7 @@ class JadwalScraper {
 
   private _cleanParsedData(parsedData: any[], parsedDataType: DataType) {
     switch (parsedDataType) {
-      case DataType.JADWAL_PERKULIAHAN:
+      case DataType.WAKTU_PERKULIAHAN:
         parsedData.map(datum => {
           const [start, end] = datum[1].split(" - ").map(time => time.replace(".", ":"));
           datum[0] = start;
@@ -111,7 +111,7 @@ class JadwalScraper {
         });
         parsedData.unshift(["Start", "End"]);
         break
-      case DataType.WAKTU_PERKULIAHAN:
+      case DataType.JADWAL_PERKULIAHAN:
 
         break
       default:
