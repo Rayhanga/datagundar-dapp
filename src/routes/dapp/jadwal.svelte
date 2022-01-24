@@ -4,9 +4,10 @@
   import mainStore from "$lib/stores";
   import jadwalScraper from "$lib/scraper/jadwal";
 
-  // const { jadwalPerkuliahan } = mainStore;
+  const { selectedCorsProxy } = mainStore;
 
   onMount(async () => {
+    jadwalScraper.setCorsProxyURL($selectedCorsProxy)
     console.log(jadwalScraper.corsProxyURL);
     console.log(await jadwalScraper.getJadwalData("4IA88"));
     // console.log($jadwalPerkuliahan);

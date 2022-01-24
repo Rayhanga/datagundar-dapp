@@ -2,48 +2,77 @@
   import jadwalScraper from "$lib/scraper/jadwal";
   import { user } from "$lib/initGun";
   import mainStore from "$lib/stores";
+  import { isCorsProxyAvailable } from "$lib/utils";
+  import { onMount } from "svelte";
 
-  const { registeredCorsProxies } = mainStore;
+  const { registeredCorsProxies, selectedCorsProxy } = mainStore;
 
-  let newCorsProxy = "";
-  let showModal = false;
+  let selectCorsProxy = "";
+  let registerNewCorsProxy = "";
+  let modalIsVisible = false;
+  let checkingCorsProxy = false;
 
-  const handleChangeCorsProxy = () => {
-    jadwalScraper.setCorsProxyURL(newCorsProxy);
-    console.log(jadwalScraper.corsProxyURL);
-    // @ts-ignore
-    user.get("corsProxy").put(newCorsProxy);
+  const handleSaveSettings = () => {
+    const [_, selectCorsProxyURL] = selectCorsProxy;
+
+    // TODO: Add validation
+    // console.log(selectCorsProxyURL)
+
+    selectedCorsProxy.setValue(selectCorsProxy);
   };
 
-  console.log($registeredCorsProxies);
+  const handleRegisterNewCorsProxy = () => {
+    const url = new URL(registerNewCorsProxy);
+    checkingCorsProxy = true;
+    isCorsProxyAvailable(url)
+    .then(isURLValid => {
+      // TODO: create validation here
+      if (isURLValid) {
+        const { origin } = url;
+        registeredCorsProxies.addItem(origin);
+        modalIsVisible = !modalIsVisible;
+        registerNewCorsProxy = "";
+      } else {
+        // TODO: Create better error handler
+        throw Error("URL not valid");
+      }
+    }).catch(() => {
+      // TODO: Create better error handler
+    }).finally(() => {
+      checkingCorsProxy = false;
+    });
+  };
+
+  onMount(() => {
+    selectCorsProxy = $selectedCorsProxy;
+  });
 </script>
 
 <svelte:head>
   <title>DataGundar Dapp | Settings</title>
 </svelte:head>
 
+<!-- TODO: Modularize this -->
 <h1>User Settings</h1>
-<form class="flex flex-col gap-5" on:submit|preventDefault={handleChangeCorsProxy}>
+<form class="flex flex-col gap-5" on:submit|preventDefault={handleSaveSettings}>
   <div class="form-control flex">
-    <label class="label">
+    <label class="label" for="registeredCorsProxy">
       <span class="label-text">Cors Proxy URL</span>
     </label>
+    <!-- TODO: Add option to delete existing CORS Proxy Host -->
     <div class="flex items-center justify-items-center gap-5 w-full">
-      <select
-        class="select flex-1"
-        bind:value={newCorsProxy}
-      >
+      <select class="select flex-1" bind:value={selectCorsProxy}>
         {#if $registeredCorsProxies}
-          {#each $registeredCorsProxies as registeredCorsProxy}
-            <option value={registeredCorsProxy}>{registeredCorsProxy} </option>
+          {#each Object.entries($registeredCorsProxies) as [key, corsProxyURL] (key)}
+            <option value={corsProxyURL}>{corsProxyURL}</option>
           {:else}
-            <option disabled={true}>Add new CORS Proxy</option>
+            <option disabled={true}>Please Add new CORS Proxy</option>
           {/each}
         {:else}
-          <option disabled={true}>Add new CORS Proxy</option>
+          <option disabled={true}>Please Add new CORS Proxy</option>
         {/if}
       </select>
-      <button class="btn btn-outline btn-circle" on:click={() => {showModal = !showModal}}>
+      <label for="my-modal-2" class="btn btn-outline btn-circle">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-6 w-6"
@@ -57,8 +86,49 @@
             stroke-width="2"
             d="M12 4v16m8-8H4"
           />
-        </svg>
-      </button>
+        </svg></label
+      >
+      <input
+        type="checkbox"
+        id="my-modal-2"
+        class="modal-toggle"
+        bind:checked={modalIsVisible}
+      />
+      <div class="modal">
+        <div class="modal-box">
+          <form on:submit|preventDefault={handleRegisterNewCorsProxy}>
+            <div class="form-control">
+              <label class="label" for="newCorsProxy">
+                <span class="label-text">New Cors Proxy URL</span>
+              </label>
+              <input
+                type="text"
+                placeholder="http://datagundar-corsproxy.app"
+                class="input"
+                bind:value={registerNewCorsProxy}
+              />
+            </div>
+            <div class="modal-action">
+              <button
+                type="reset"
+                class="btn"
+                on:click={() => {
+                  modalIsVisible = !modalIsVisible;
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                disabled={checkingCorsProxy}
+                class="btn btn-primary"
+                type="submit"
+              >
+                Register CORS Proxy
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
   <button type="submit" class="btn btn-primary">Save Changes</button>
