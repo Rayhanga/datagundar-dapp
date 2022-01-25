@@ -3,7 +3,7 @@
 </svelte:head>
 
 <div
-  class="navbar mb-2 shadow-lg bg-neutral text-neutral-content fixed top-0 w-full z-10"
+  class="navbar mb-10 shadow-lg bg-neutral text-neutral-content fixed top-0 w-full z-10"
 >
   <div class="flex-none px-2 mx-2">
     <span class="text-lg font-bold"> Data Gundar </span>
@@ -12,14 +12,14 @@
     <div class="items-stretch hidden lg:flex">
       <a href="/" class="btn btn-ghost btn-sm rounded-btn"> Home </a>
       <!-- <a href="/404"/> -->
-      <a href="/login"/>
-      <a href="/register"/>
-      <a href="/404"></a>
+      <a href="/login" />
+      <a href="/register" />
+      <a href="/404" />
       <a href="/about" class="btn btn-ghost btn-sm rounded-btn">
         About Data Gundar
       </a>
       <a
-        href="https://github.com/rayhanga/DataGundarDapp" 
+        href="https://github.com/rayhanga/DataGundarDapp"
         target="_BLANK"
         class="btn btn-ghost btn-sm rounded-btn"
       >

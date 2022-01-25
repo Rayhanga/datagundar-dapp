@@ -23,3 +23,15 @@ export interface Jadwal {
   hari: string;
   matkul: MataKuliah;
 }
+
+export enum NotificationType {
+  ERROR = "error",
+  INFO = "info",
+  WARNING = "warning",
+  SUCCESS = "success"
+}
+
+export interface Notification {
+  type: NotificationType
+  message: string
+}

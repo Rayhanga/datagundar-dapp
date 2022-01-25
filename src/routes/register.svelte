@@ -1,12 +1,16 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+  import { NotificationType } from "$lib/genericTypes";
   import { user } from "$lib/initGun";
+  import mainStore from "$lib/stores";
 
   let newUser = {
     username: "",
     password: "",
     confirmPassword: "",
   };
+
+  const { notifications } = mainStore;
 
   const handleRegister = () => {
     const { username, password, confirmPassword } = newUser;
@@ -18,9 +22,16 @@
 
     user.create(username, password, (ack) => {
       if ("err" in ack) {
-        console.log(ack.err);
+        notifications.notify({
+          type: NotificationType.ERROR,
+          message: ack.err,
+        });
+        // console.log(ack.err);
       } else {
-        console.log(`A User with username of ${username} has been created`);
+        notifications.notify({
+          type: NotificationType.SUCCESS,
+          message: `A User with username of ${username} has been created`,
+        });
         goto("/login");
       }
     });

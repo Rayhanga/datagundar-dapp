@@ -1,11 +1,10 @@
 <script>
-  import jadwalScraper from "$lib/scraper/jadwal";
-  import { user } from "$lib/initGun";
+  import { NotificationType } from "$lib/genericTypes";
   import mainStore from "$lib/stores";
   import { isCorsProxyAvailable } from "$lib/utils";
   import { onMount } from "svelte";
 
-  const { registeredCorsProxies, selectedCorsProxy } = mainStore;
+  const { notifications, registeredCorsProxies, selectedCorsProxy } = mainStore;
 
   let selectCorsProxy = "";
   let registerNewCorsProxy = "";
@@ -22,25 +21,35 @@
   };
 
   const handleRegisterNewCorsProxy = () => {
-    const url = new URL(registerNewCorsProxy);
+    let url;
+    try {
+      url = new URL(registerNewCorsProxy);
+    } catch {
+    }
     checkingCorsProxy = true;
     isCorsProxyAvailable(url)
-    .then(isURLValid => {
-      // TODO: create validation here
-      if (isURLValid) {
-        const { origin } = url;
-        registeredCorsProxies.addItem(origin);
-        modalIsVisible = !modalIsVisible;
-        registerNewCorsProxy = "";
-      } else {
-        // TODO: Create better error handler
-        throw Error("URL not valid");
-      }
-    }).catch(() => {
-      // TODO: Create better error handler
-    }).finally(() => {
-      checkingCorsProxy = false;
-    });
+      .then((isURLValid) => {
+        if (isURLValid) {
+          const { origin } = url;
+          registeredCorsProxies.addItem(origin);
+          modalIsVisible = !modalIsVisible;
+          registerNewCorsProxy = "";
+        } else {
+          notifications.notify({
+            type: NotificationType.ERROR,
+            message: "URL is Not Valid!",
+          });
+        }
+      })
+      .catch((err) => {
+        notifications.notify({
+          type: NotificationType.ERROR,
+          message: "URL is Not Valid!",
+        });
+      })
+      .finally(() => {
+        checkingCorsProxy = false;
+      });
   };
 
   onMount(() => {
@@ -133,16 +142,3 @@
   </div>
   <button type="submit" class="btn btn-primary">Save Changes</button>
 </form>
-
-<!-- TODO: Add validation -->
-<!-- <form on:submit|preventDefault={handleChangeCorsProxy}>
-  <div class="form-control">
-    <input
-      type="text"
-      placeholder="http://datagundar-corsproxy.app"
-      class="input"
-      bind:value={newCorsProxy}
-    />
-  </div>
-  <button type="submit" class="btn btn-primary w-full">Register</button>
-</form> -->

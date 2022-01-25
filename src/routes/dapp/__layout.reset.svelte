@@ -1,12 +1,14 @@
 <script lang="ts">
+  import "../../app.css";
+  import { onMount } from "svelte";
+  
   import { goto } from "$app/navigation";
   import mainStore from "$lib/stores";
-  import { onMount } from "svelte";
   import { user } from "$lib/initGun";
+  import NotificationArea from "$lib/components/notificationArea.svelte";
+import { NotificationType } from "$lib/genericTypes";
 
-  import "../../app.css";
-
-  const { username } = mainStore
+  const { notifications, username } = mainStore;
 
   onMount(() => {
     if (!$username) {
@@ -17,10 +19,15 @@
   const handleLogout = () => {
     user.leave();
     username.set("");
+    notifications.notify({
+      type: NotificationType.INFO,
+      message: "Successfully Logged out"
+    });
     goto("/", { replaceState: true });
   };
 </script>
 
+<NotificationArea />
 <div class="shadow bg-base-200 drawer drawer-mobile min-h-screen">
   <input id="sidebar" type="checkbox" class="drawer-toggle" />
   <div class="flex flex-col drawer-content">

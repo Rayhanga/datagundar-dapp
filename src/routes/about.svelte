@@ -15,7 +15,7 @@
         About Data Gundar
       </a>
       <a
-        href="https://github.com/rayhanga/DataGundarDapp" 
+        href="https://github.com/rayhanga/DataGundarDapp"
         target="_BLANK"
         class="btn btn-ghost btn-sm rounded-btn"
       >
