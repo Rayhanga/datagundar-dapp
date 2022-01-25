@@ -1,12 +1,12 @@
 <script lang="ts">
   import "../../app.css";
   import { onMount } from "svelte";
-  
+
   import { goto } from "$app/navigation";
   import mainStore from "$lib/stores";
   import { user } from "$lib/initGun";
   import NotificationArea from "$lib/components/notificationArea.svelte";
-import { NotificationType } from "$lib/genericTypes";
+  import { NotificationType } from "$lib/genericTypes";
 
   const { notifications, username } = mainStore;
 
@@ -21,7 +21,7 @@ import { NotificationType } from "$lib/genericTypes";
     username.set("");
     notifications.notify({
       type: NotificationType.INFO,
-      message: "Successfully Logged out"
+      message: "Successfully Logged out",
     });
     goto("/", { replaceState: true });
   };
