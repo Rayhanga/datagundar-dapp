@@ -4,8 +4,9 @@
   import { user } from "$lib/initGun";
   import { onMount } from "svelte";
   import NotificationArea from "$lib/components/notificationArea.svelte";
+import { NotificationType } from "$lib/genericTypes";
 
-  const { username } = mainStore;
+  const { notifications, username } = mainStore;
 
   let userCredential = {
     username: "",
@@ -24,10 +25,16 @@
     user.auth(username, password, (ack) => {
       if ("err" in ack) {
         if (ack) {
-          console.log(ack.err);
+          notifications.notify({
+            type: NotificationType.ERROR,
+            message: ack.err
+          })
         }
       } else {
-        console.log(ack);
+          notifications.notify({
+            type: NotificationType.INFO,
+            message: `Successfully Logged in as ${username}`
+          })
         console.log(`Logged In`);
         goto("/dapp");
       }
