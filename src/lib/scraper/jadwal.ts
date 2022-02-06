@@ -27,25 +27,25 @@ class JadwalScraper {
     this.corsProxyInstance = instanceFactory(InstanceType.BAAK, newCorsProxyURL)
   }
 
-  public async getJadwalData(teks: string){
-    const jadwalDataRaw = await this._getRawData("/jadwal/cariJadKul", {
-      params: {
-        teks
-      }
-    })
+  public async getJadwalData(teks: string) {
+    const jadwalDataRaw = await this._getRawData(`/jadwal/cariJadKul?teks=${teks}`)
     const waktuPerkuliahanDataRaw = await this._getRawData("/kuliahUjian/6#")
 
     this.waktuPerkulihanData = await this._parseRawData(waktuPerkuliahanDataRaw, DataType.WAKTU_PERKULIAHAN)
     this.jadwalData = await this._parseRawData(jadwalDataRaw, DataType.JADWAL_PERKULIAHAN)
-    
+
     return this.jadwalData
   }
 
 
-  private async _getRawData(path: string, config = {}) {
-    return await this.corsProxyInstance.get(path, config)
-    // TODO: Add error notification here
-    .catch()
+  private async _getRawData(path: string) {
+    return await this.corsProxyInstance.get("/", {
+      params: {
+        url: path
+      }
+    })
+      // TODO: Add error notification here
+      .catch()
   }
 
   private _parseRawData(response, rawDataType: DataType) {
@@ -82,7 +82,7 @@ class JadwalScraper {
           });
 
           let [kelas, hari, matkul, waktu, ruang, dosen] = jadwalDatum
-          if (i > 0){
+          if (i > 0) {
             waktu = this._parseJadwalWaktu(waktu)
           }
           matkul = matkul.replace(/\s*$/g, "")
@@ -112,14 +112,14 @@ class JadwalScraper {
         parsedData.unshift(["Start", "End"]);
         break
       // case DataType.JADWAL_PERKULIAHAN:
-        
+
       //   break
       default:
         throw "Error DataType"
     }
   }
 
-  private _parseJadwalWaktu(waktu: string){
+  private _parseJadwalWaktu(waktu: string) {
     const waktuParse = waktu.split("/").filter(item => item !== "");
     if (waktuParse.length > 0) {
       const waktuStart = this.waktuPerkulihanData[waktuParse[0]][0];
@@ -160,7 +160,7 @@ class JadwalScraper {
   }
 }
 
-const {selectedCorsProxy} = mainStore
+const { selectedCorsProxy } = mainStore
 
 const jadwalScraper = new JadwalScraper(get(selectedCorsProxy))
 selectedCorsProxy.subscribe(newCorsProxyURL => {

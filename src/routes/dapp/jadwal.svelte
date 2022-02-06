@@ -21,8 +21,8 @@
     selectedJadwalItem = $jadwalPerkuliahan[key];
   };
 
-  onMount(() => {
-    // await updateJadwal();
+  onMount(async () => {
+    await updateJadwal();
 
     if ($selectedCorsProxy) {
     } else {

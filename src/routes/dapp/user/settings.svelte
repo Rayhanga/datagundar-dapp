@@ -30,8 +30,8 @@
     isCorsProxyAvailable(url)
       .then((isURLValid) => {
         if (isURLValid) {
-          const { origin } = url;
-          registeredCorsProxies.addItem(origin);
+          const { href } = url;
+          registeredCorsProxies.addItem(href);
           modalIsVisible = !modalIsVisible;
           registerNewCorsProxy = "";
         } else {

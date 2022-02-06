@@ -7,18 +7,28 @@ export enum InstanceType {
 }
 
 export const instanceFactory = (instanceType: InstanceType, corsProxy: URL | string): AxiosInstance => {
+  console.log(corsProxy)
   switch (instanceType) {
     case InstanceType.BAAK:
       return axios.create({
-        baseURL: `${corsProxy}/baak`,
+        baseURL: `${corsProxy}`,
+        params: {
+          site: "baak"
+        }
       })
     case InstanceType.SAP:
       return axios.create({
-        baseURL: `${corsProxy}/sap`,
+        baseURL: `${corsProxy}`,
+        params: {
+          site: "sap"
+        }
       })
     case InstanceType.STAFFSITE:
       return axios.create({
-        baseURL: `${corsProxy}/staffsite`,
+        baseURL: `${corsProxy}`,
+        params: {
+          site: "staffsite"
+        }
       })
   }
 }

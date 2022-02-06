@@ -1,9 +1,9 @@
 import axios from "axios"
-import mainStore from "./stores"
 
 export const isCorsProxyAvailable = async (corsProxyURL: URL) => {
-  const { origin } = corsProxyURL
-  const response = await axios.get(origin)
+  console.log(corsProxyURL)
+  const { href } = corsProxyURL
+  const response = await axios.get(href)
   const { status } = response.data
   return status === "ok"
 }
