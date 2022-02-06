@@ -9,3 +9,5 @@ radata
 /build
 /.svelte-kit
 /package
+
+.vercel
