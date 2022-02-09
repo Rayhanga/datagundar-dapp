@@ -15,14 +15,27 @@ export default async (request: VercelRequest, response: VercelResponse) => {
           .get(url as string)
           .then((res) => {
             return res.data;
+          })
+          .catch(err => {
+            if (!err.response) {
+              response.status(504).json({
+                message: `Connection timeout with ${site}`,
+              })
+            } else {
+              response.status(err.response.status).json({
+                message: err.message,
+              })
+            }
           });
         response.send(baakProxy);
         break;
       default:
-        throw new Error("Wrong site target")
+        response.status(403).json({
+          message: "Wrong site target",
+        })
     }
   } else {
-    return response.json({
+    response.json({
       status: "ok"
     })
   }
