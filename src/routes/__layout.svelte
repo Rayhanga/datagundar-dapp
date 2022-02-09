@@ -3,7 +3,7 @@
   import { goto } from "$app/navigation";
   import mainStore from "$lib/stores";
   import { onMount } from "svelte";
-import NotificationArea from "$lib/components/notificationArea.svelte";
+import NotificationArea from "$lib/components/notificationSystem/notificationArea.svelte";
 
   const { username } = mainStore;
 

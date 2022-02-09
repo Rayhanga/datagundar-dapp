@@ -3,7 +3,7 @@
   import { goto } from "$app/navigation";
   import { user } from "$lib/initGun";
   import { onMount } from "svelte";
-  import NotificationArea from "$lib/components/notificationArea.svelte";
+  import NotificationArea from "$lib/components/notificationSystem/notificationArea.svelte";
 import { NotificationType } from "$lib/genericTypes";
 
   const { notifications, username } = mainStore;

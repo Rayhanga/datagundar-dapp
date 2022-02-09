@@ -5,7 +5,7 @@
   import { goto } from "$app/navigation";
   import mainStore from "$lib/stores";
   import { user } from "$lib/initGun";
-  import NotificationArea from "$lib/components/notificationArea.svelte";
+  import NotificationArea from "$lib/components/notificationSystem/notificationArea.svelte";
   import { NotificationType } from "$lib/genericTypes";
 
   const { notifications, username } = mainStore;

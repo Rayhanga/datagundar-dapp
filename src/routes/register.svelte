@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto } from "$app/navigation";
+import NotificationArea from "$lib/components/notificationArea.svelte";
   import { NotificationType } from "$lib/genericTypes";
   import { user } from "$lib/initGun";
   import mainStore from "$lib/stores";
@@ -16,7 +17,10 @@
     const { username, password, confirmPassword } = newUser;
 
     if (password !== confirmPassword) {
-      console.log("ERROR: Password is not the same with Confirm Password");
+        notifications.notify({
+          type: NotificationType.ERROR,
+          message: "Password is not the same with Confirm Password",
+        });
       return;
     }
 
@@ -48,6 +52,7 @@
   <title>DataGundar | Register</title>
 </svelte:head>
 
+<NotificationArea />
 <div
   class="flex flex-col items-center justify-center drawer-content min-h-screen"
 >
