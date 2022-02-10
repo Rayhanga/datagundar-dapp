@@ -2,14 +2,18 @@ import cheerio from "cheerio";
 import type { AxiosInstance } from "axios";
 import { get } from "svelte/store";
 
+import { NotificationType } from "$lib/genericTypes"
 import type { Jadwal } from "$lib/genericTypes";
 import { instanceFactory, InstanceType } from "$lib/proxies";
 import mainStore from "$lib/stores";
+import { createKeyFromString } from "$lib/utils";
 
 enum DataType {
   WAKTU_PERKULIAHAN = 0,
   JADWAL_PERKULIAHAN = 1
 }
+
+const { selectedCorsProxy, notifications } = mainStore
 
 class JadwalScraper {
   hariList: string[]
@@ -29,12 +33,14 @@ class JadwalScraper {
 
   public async getJadwalData(teks: string) {
     const jadwalDataRaw = await this._getRawData(`/jadwal/cariJadKul?teks=${teks}`)
-    const waktuPerkuliahanDataRaw = await this._getRawData("/kuliahUjian/6#")
+    if (jadwalDataRaw) {
+      const waktuPerkuliahanDataRaw = await this._getRawData("/kuliahUjian/6#")
 
-    this.waktuPerkulihanData = await this._parseRawData(waktuPerkuliahanDataRaw, DataType.WAKTU_PERKULIAHAN)
-    this.jadwalData = await this._parseRawData(jadwalDataRaw, DataType.JADWAL_PERKULIAHAN)
+      this.waktuPerkulihanData = await this._parseRawData(waktuPerkuliahanDataRaw, DataType.WAKTU_PERKULIAHAN)
+      this.jadwalData = await this._parseRawData(jadwalDataRaw, DataType.JADWAL_PERKULIAHAN)
 
-    return this.jadwalData
+      return this.jadwalData
+    }
   }
 
 
@@ -44,8 +50,12 @@ class JadwalScraper {
         url: path
       }
     })
-      // TODO: Add error notification here
-      .catch()
+      .catch(err => {
+        notifications.notify({
+          type: NotificationType.ERROR,
+          message: `${err.message}`
+        })
+      })
   }
 
   private _parseRawData(response, rawDataType: DataType) {
@@ -85,9 +95,9 @@ class JadwalScraper {
           if (i > 0) {
             waktu = this._parseJadwalWaktu(waktu)
           }
-          matkul = matkul.replace(/\s*$/g, "")
+          matkul = matkul.replace(/\s*$/g, "").replace(/\/*/g, "").replace(/\**/g, "").replace(/\#*/g, "")
 
-          jadwalData = [...jadwalData, [`${hari}_${matkul.replace(/\s/g, "-")}_${dosen.replace(/\s/g, "-")}`, {
+          jadwalData = [...jadwalData, [`${kelas}_${hari}_${createKeyFromString(matkul)}_${createKeyFromString(dosen)}`, {
             kelas, hari, matkul, waktu, ruang, dosen
           }]]
 
@@ -159,8 +169,6 @@ class JadwalScraper {
     }
   }
 }
-
-const { selectedCorsProxy } = mainStore
 
 const jadwalScraper = new JadwalScraper(get(selectedCorsProxy))
 selectedCorsProxy.subscribe(newCorsProxyURL => {

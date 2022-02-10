@@ -7,7 +7,6 @@ export enum InstanceType {
 }
 
 export const instanceFactory = (instanceType: InstanceType, corsProxy: URL | string): AxiosInstance => {
-  console.log(corsProxy)
   switch (instanceType) {
     case InstanceType.BAAK:
       return axios.create({

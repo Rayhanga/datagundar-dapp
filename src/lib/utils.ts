@@ -1,7 +1,7 @@
 import axios from "axios"
+import type { WritableGunCollection, WritableGunItem } from "./storeTypes"
 
 export const isCorsProxyAvailable = async (corsProxyURL: URL) => {
-  console.log(corsProxyURL)
   const { href } = corsProxyURL
   const response = await axios.get(href)
   const { status } = response.data
@@ -15,4 +15,8 @@ export const toTitleCase = (str) => {
       return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     }
   );
+}
+
+export const createKeyFromString = (str) => {
+  return str.replace(/\s/g, "-")
 }

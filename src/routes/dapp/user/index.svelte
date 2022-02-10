@@ -1,30 +1,63 @@
 <script lang="ts">
-import { NotificationType } from "$lib/genericTypes";
+  import { goto } from "$app/navigation";
+
+  import { NotificationType } from "$lib/genericTypes";
+  import sapScraper from "$lib/scraper/sap";
 
   import mainStore from "$lib/stores";
 
   import { onMount } from "svelte";
 
-  const { userkelas, username, notifications } = mainStore;
+  const {
+    selectedCorsProxy,
+    userkelas,
+    username,
+    userjurusan,
+    notifications,
+    sapMataKuliah,
+  } = mainStore;
 
   let userProfile = {
     username: "",
     userkelas: "",
+    userjurusan: "",
   };
 
   const handleSaveProfile = () => {
     username.setValue(userProfile.username);
     userkelas.setValue(userProfile.userkelas);
+    userjurusan.setValue(userProfile.userjurusan);
     notifications.notify({
       type: NotificationType.SUCCESS,
-      message: "Changes have been saved!"
-    })
+      message: "Changes have been saved!",
+    });
   };
 
-  onMount(() => {
+  const validateSetup = () => {
+    if ($selectedCorsProxy === "" || !$selectedCorsProxy) {
+      notifications.notify({
+        type: NotificationType.INFO,
+        message: "Please setup Cors Proxy First!",
+      });
+      goto("/dapp/user/settings/");
+      return false;
+    }
+
+    return true;
+  };
+
+  onMount(async () => {
+    const updatedData = await sapScraper.getSapData();
+    // console.log(updatedData)
+    sapMataKuliah.setCollection(updatedData, () => {});
     userProfile.username = $username;
     userProfile.userkelas = $userkelas;
+    userProfile.userjurusan = $userjurusan;
   });
+
+  $: {
+    // console.log($sapMataKuliah)
+  }
 </script>
 
 <svelte:head>
@@ -57,6 +90,28 @@ import { NotificationType } from "$lib/genericTypes";
       class="input"
       bind:value={userProfile.userkelas}
     />
+  </div>
+  <div class="form-control flex">
+    <label class="label" for="registeredCorsProxy">
+      <span class="label-text">Jurusan</span>
+    </label>
+    <select class="select flex-1" bind:value={userProfile.userjurusan}>
+      {#if $sapMataKuliah}
+        {#each Object.keys($sapMataKuliah) as fakultasJurusan (fakultasJurusan)}
+          <option value={fakultasJurusan}
+            >{fakultasJurusan.replace(/\-/g, " ").replace(/\_/g, ": ")}</option
+          >
+        {:else}
+          <option disabled={true}
+            >Please Wait while we retrieve daftar jurusan</option
+          >
+        {/each}
+      {:else}
+        <option disabled={true}
+          >Please Wait while we retrieve daftar jurusan</option
+        >
+      {/if}
+    </select>
   </div>
   <button type="submit" class="btn btn-primary w-full">Save Changes</button>
 </form>

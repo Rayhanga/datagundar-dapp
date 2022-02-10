@@ -1,34 +1,17 @@
 import type { IGunChainReference } from "gun/types/chain";
-import type { Writable } from "svelte/store";
 import { writable } from "svelte/store";
 import type { Notification } from "./genericTypes"
 import { NotificationType } from "./genericTypes";
 import { gun, user } from "./initGun";
-
-interface WritableGunCollection extends Writable<object> {
-  getItemKey(targetValue: any): string | null
-  getItemByKey(key: string): any
-  addItem(value: any, key?: string): void
-  updateItem(key: string, value: any): void
-  removeItem(key: string): void
-  clearCollection(): void
-  setCollection(newCollection: any[]): void
-}
-
-interface WritableGunItem<T> extends Writable<T> {
-  setValue(newValue: T): void
-  deleteValue(): void
-}
-
-interface NotificationStore extends Writable<object> {
-  notify(notification: Notification): void
-  removeNotification(key: string): void
-}
+import type { NotificationStore, WritableGunCollection, WritableGunItem } from "./storeTypes";
 
 class MainStore {
   username: WritableGunItem<string>
   userkelas: WritableGunItem<string>
+  userjurusan: WritableGunItem<string>
   jadwalPerkuliahan: WritableGunCollection
+  sapMataKuliah: WritableGunCollection
+  dataDosen: WritableGunCollection
   registeredCorsProxies: WritableGunCollection
   selectedCorsProxy: WritableGunItem<string>
   notifications: NotificationStore
@@ -38,8 +21,11 @@ class MainStore {
   ) {
     this.username = this._createUsernameStore(this.user)
     this.userkelas = this._createCustomGunStore(this.user.get("kelas"))
+    this.userjurusan = this._createCustomGunStore(this.user.get("jurusan"))
     this.selectedCorsProxy = this._createCustomGunStore(this.user.get("selectedCorsProxy"))
     this.jadwalPerkuliahan = this._createCustomGunCollectionStore(this.user.get("jadwalPerkuliahan"))
+    this.sapMataKuliah = this._createCustomGunCollectionStore(this.user.get("sapMataKuliah"))
+    this.dataDosen = this._createCustomGunCollectionStore(this.user.get("dataDosen"))
     this.registeredCorsProxies = this._createCustomGunCollectionStore(this.user.get("registeredCorsProxies"))
     this.notifications = this._createNotificationStore()
   }
@@ -145,9 +131,8 @@ class MainStore {
         for (const [key, val] of Object.entries(value)) {
           // console.log(key, val)
           if (targetKey === key) {
-            console.log(key, val)
+            // console.log(key, val)
             return [key, val]
-            break
           }
         }
       })
@@ -178,13 +163,13 @@ class MainStore {
     }
 
     const clearCollection = () => {
-      ref.put(null)
+      ref.put(null, () => {
+        set({})
+      })
     }
 
-    const setCollection = (newCollection: any[]) => {
-      for (const item of newCollection) {
-        ref.set(item)
-      }
+    const setCollection = (newValue, ack) => {
+      ref.put(newValue, ack)
     }
 
     return {
@@ -233,5 +218,14 @@ class MainStore {
   }
 }
 
+// Possible implementation of observer for gun.js value changes
+// const observer = (ref: IGunChainReference, callback: Function) => {
+//   ref.on((value) => { callback(ref, value) })
+// }
+
 const mainStore = new MainStore(user)
+
+// observer(mainStore.user.get("kelas"), (ref, val) => {
+//   console.log(ref, val)
+// })
 export default mainStore
