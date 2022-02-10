@@ -20,7 +20,7 @@
   };
 
   onMount(() => {
-    alertClass = `my-3 alert alert-${type} bg-base-300`;
+    alertClass = `my-3 alert alert-${type} bg-base-300 mx-auto z-50`;
     autoDismiss = setInterval(() => {
       timeleft = Date.now() - key;
       timeleft = timeleft - lifespan;
