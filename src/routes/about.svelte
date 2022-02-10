@@ -47,9 +47,7 @@
     <div class="max-w-md">
       <h1 class="mb-5 text-5xl font-bold">About Data Gundar</h1>
       <p class="mb-5">
-        Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda
-        excepturi exercitationem quasi. In deleniti eaque aut repudiandae et a
-        id nisi.
+        DataGundar Dapp is a Decentralized App (Dapp) built with SvelteKit, DaisyUI, and Gun.js to get academic information in a single offline-first Dapp.
       </p>
       <div class="flex space-x-7 justify-center">
         <a href="/dapp" class="btn btn-primary">
